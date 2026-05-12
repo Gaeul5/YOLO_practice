@@ -132,8 +132,15 @@ def train_one_epoch(model, loader, optimizer, criterion, device):
         imgs, targets = imgs.to(device), targets.to(device)
         preds = model(imgs)
         loss  = criterion(preds, targets)
+
+        if not torch.isfinite(loss):
+            print(f'  [skip] non-finite loss: {loss.item():.4f}')
+            optimizer.zero_grad()
+            continue
+
         optimizer.zero_grad()
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=10.0)
         optimizer.step()
         total += loss.item()
     return total / len(loader)
