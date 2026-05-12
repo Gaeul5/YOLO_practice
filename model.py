@@ -94,4 +94,6 @@ class YOLOv1(nn.Module):
         x = self.classifier(x)                          # (N, S·S·(B*5+C))
         x = x.view(-1, self.S, self.S,
                    self.B * 5 + self.C)                 # (N, S, S, B*5+C)
-        return x
+        # sigmoid로 모든 출력을 (0,1)에 고정 → tx,ty,w,h,conf,class 전부 bounded
+        # 이로 인해 w,h가 음수가 되거나 conf가 폭발하는 NaN 문제 방지
+        return torch.sigmoid(x)
